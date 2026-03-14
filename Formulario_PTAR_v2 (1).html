@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Visitas Técnicas — PTAR/PTAP</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Figtree:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f1f5f9; --white:#fff; --surface:#f8fafc; --surface2:#f1f5f9;
+  --navy:#0f2744; --blue:#1d4ed8; --blue-l:#dbeafe; --blue-m:#3b82f6;
+  --teal:#0e7490; --teal-l:#cffafe;
+  --green:#059669; --green-l:#d1fae5;
+  --amber:#b45309; --amber-l:#fef3c7;
+  --red:#dc2626; --red-l:#fee2e2;
+  --violet:#7c3aed; --violet-l:#ede9fe;
+  --border:#e2e8f0; --border2:#cbd5e1;
+  --text:#0f172a; --mid:#475569; --muted:#94a3b8;
+  --r:10px; --mono:'Syne',sans-serif; --sans:'Figtree',sans-serif;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);font-family:var(--sans);color:var(--text);min-height:100vh}
+
+/* NAV */
+nav{background:var(--navy);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-logo{width:30px;height:30px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:800;color:#fff}
+.nav-name{font-family:var(--mono);font-size:13px;font-weight:700;color:rgba(255,255,255,.92);letter-spacing:.02em}
+.nav-tag{font-size:11px;color:rgba(255,255,255,.35);font-family:var(--mono)}
+
+/* STEP BAR */
+.stepbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+.stepbar::-webkit-scrollbar{display:none}
+.sb-item{display:flex;align-items:center;gap:8px;padding:14px 18px 14px 0;margin-right:4px;border-bottom:2.5px solid transparent;cursor:pointer;white-space:nowrap;opacity:.45;transition:.2s}
+.sb-item.active{border-bottom-color:var(--blue);opacity:1}
+.sb-item.done{opacity:.75}
+.sb-item.done .sb-n{background:var(--green);color:#fff}
+.sb-n{width:22px;height:22px;border-radius:50%;background:var(--blue-l);color:var(--blue);font-family:var(--mono);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s}
+.sb-item.active .sb-n{background:var(--blue);color:#fff}
+.sb-lbl{font-size:12px;font-weight:600;color:var(--mid)}
+.sb-item.active .sb-lbl{color:var(--blue)}
+
+/* WRAP */
+.wrap{max-width:860px;margin:28px auto;padding:0 16px 80px}
+
+/* CARD */
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;box-shadow:var(--sh);margin-bottom:20px;overflow:hidden;animation:up .3s ease both}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:13px}
+.c-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.ci-blue{background:var(--blue-l)} .ci-teal{background:var(--teal-l)}
+.ci-green{background:var(--green-l)} .ci-violet{background:var(--violet-l)} .ci-amber{background:var(--amber-l)}
+.card-head h2{font-size:15px;font-weight:700;color:var(--text)}
+.card-head p{font-size:12px;color:var(--muted);margin-top:1px}
+.card-body{padding:22px}
+.card-foot{padding:16px 22px;border-top:1px solid var(--border);background:var(--surface);display:flex;justify-content:space-between;align-items:center}
+
+/* STEP VISIBILITY */
+.step{display:none}.step.active{display:block}
+
+/* FIELDS */
+.row{display:grid;gap:14px;margin-bottom:14px}
+.row.c2{grid-template-columns:1fr 1fr}
+.row.c3{grid-template-columns:1fr 1fr 1fr}
+.row.c1{grid-template-columns:1fr}
+@media(max-width:600px){.row.c2,.row.c3{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:5px}
+label{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.req{color:var(--red);font-size:13px}
+.badge{font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:4px;font-weight:700}
+.b-unit{background:var(--blue-l);color:var(--blue)}
+.b-vmp{background:var(--amber-l);color:var(--amber)}
+.b-auto{background:var(--green-l);color:var(--green)}
+.b-mem{background:var(--violet-l);color:var(--violet)}
+
+input[type=text],input[type=number],input[type=email],input[type=date],select,textarea{
+  width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;
+  font-family:var(--sans);font-size:14px;color:var(--text);background:var(--surface);
+  outline:none;transition:.15s;appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.1);background:#fff}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:32px;cursor:pointer}
+textarea{resize:vertical;min-height:72px;line-height:1.5}
+.hint{font-size:11px;color:var(--muted);line-height:1.5}
+.computed{background:linear-gradient(135deg,var(--teal-l),var(--blue-l));border:1.5px solid #bae6fd;border-radius:8px;padding:9px 13px;font-family:var(--mono);font-size:15px;font-weight:700;color:var(--teal);min-height:40px;display:flex;align-items:center}
+.divider{height:1px;background:var(--border);margin:18px 0}
+
+/* MEMORY BANNER */
+.mem-banner{background:linear-gradient(135deg,#ede9fe,#dbeafe);border:1.5px solid #c4b5fd;border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:flex-start;gap:12px}
+.mem-banner.hidden{display:none}
+.mem-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.mem-title{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--violet);letter-spacing:.04em;margin-bottom:4px}
+.mem-text{font-size:12px;color:#5b21b6;line-height:1.5}
+.mem-btn{margin-top:8px;padding:5px 14px;background:var(--violet);color:#fff;border:none;border-radius:6px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:.15s}
+.mem-btn:hover{background:#6d28d9}
+
+/* APPLICATION SELECTOR */
+.app-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px}
+@media(max-width:520px){.app-grid{grid-template-columns:1fr}}
+.app-toggle{position:relative}
+.app-toggle input{position:absolute;opacity:0;width:0;height:0}
+.app-toggle label{display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:.15s;background:var(--surface)}
+.app-toggle input:checked+label{border-color:var(--blue);background:var(--blue-l)}
+.app-toggle label:hover{border-color:var(--blue-m)}
+.app-emoji{font-size:22px}
+.app-info strong{font-size:13px;font-weight:700;display:block}
+.app-info span{font-size:11px;color:var(--muted)}
+.app-toggle input:checked+label .app-info span{color:var(--blue)}
+.app-check{margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;transition:.15s}
+.app-toggle input:checked+label .app-check{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* APPLICATION BLOCK */
+.app-block{border:2px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;transition:.2s}
+.app-block.ptar-block{border-color:#bfdbfe}
+.app-block.ptap-block{border-color:#a7f3d0}
+.app-block.olor-block{border-color:#ddd6fe}
+.app-block.torre-block{border-color:#fed7aa}
+.app-block-head{padding:13px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.ptar-block .app-block-head{background:#eff6ff}
+.ptap-block .app-block-head{background:#ecfdf5}
+.olor-block .app-block-head{background:#f5f3ff}
+.torre-block .app-block-head{background:#fff7ed}
+.app-block-title{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700}
+.app-block-toggle{font-size:18px;color:var(--muted);transition:.2s}
+.app-block.collapsed .app-block-toggle{transform:rotate(-90deg)}
+.app-block-body{padding:18px;border-top:1px solid var(--border)}
+.app-block.collapsed .app-block-body{display:none}
+
+/* POINTS */
+.points-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.points-title{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.btn-add-point{padding:6px 14px;background:var(--navy);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s;font-family:var(--sans)}
+.btn-add-point:hover{background:#1e3a6e}
+
+.point-card{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.point-head{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.point-name-input{background:transparent;border:none;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--navy);outline:none;width:200px}
+.point-name-input::placeholder{color:var(--muted)}
+.btn-remove-point{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;transition:.15s}
+.btn-remove-point:hover{background:var(--red-l);color:var(--red)}
+.point-body{padding:14px}
+.params-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:640px){.params-grid{grid-template-columns:1fr 1fr}}
+
+.param-field label{font-size:11px;font-weight:600;color:var(--mid);margin-bottom:3px;display:flex;align-items:center;justify-content:space-between}
+.param-unit{font-family:var(--mono);font-size:9px;color:var(--muted)}
+.param-field input{padding:7px 10px;font-size:13px;border-radius:6px}
+.param-status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-left:4px;background:var(--border)}
+.dot-ok{background:var(--green)} .dot-warn{background:#f59e0b} .dot-fail{background:var(--red)}
+
+/* PRODUCTS TABLE */
+.products-section{margin-top:18px}
+.products-title{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.prod-table{width:100%;border-collapse:collapse}
+.prod-table th{background:var(--surface2);font-size:10px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
+.prod-table td{padding:6px 6px;border-bottom:1px solid var(--surface2);vertical-align:middle}
+.prod-table tr:last-child td{border-bottom:none}
+.prod-table input,.prod-table select{padding:6px 9px;font-size:12px;border-radius:6px}
+.btn-remove-prod{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:3px 7px;border-radius:4px}
+.btn-remove-prod:hover{background:var(--red-l);color:var(--red)}
+.btn-add-prod{margin-top:8px;padding:5px 13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-weight:600;color:var(--mid);cursor:pointer;font-family:var(--sans)}
+.btn-add-prod:hover{border-color:var(--blue);color:var(--blue)}
+
+/* PH BAR */
+.ph-wrap{margin-top:6px}
+.ph-bar{height:6px;border-radius:3px;background:linear-gradient(to right,#dc2626 0%,#f97316 15%,#fbbf24 28%,#84cc16 40%,#22c55e 48%,#22c55e 54%,#84cc16 62%,#60a5fa 75%,#818cf8 88%,#7c3aed 100%);position:relative;margin-bottom:4px}
+.ph-cur{position:absolute;top:-4px;width:14px;height:14px;background:#fff;border:2.5px solid var(--navy);border-radius:50%;transform:translateX(-7px);transition:left .3s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.ph-labels{display:flex;justify-content:space-between}
+.ph-labels span{font-family:var(--mono);font-size:9px;color:var(--muted)}
+.ph-tag{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 9px;border-radius:4px;display:inline-block;margin-top:4px}
+.tag-ok{background:var(--green-l);color:var(--green)}
+.tag-warn{background:var(--amber-l);color:var(--amber)}
+.tag-fail{background:var(--red-l);color:var(--red)}
+.tag-na{background:var(--surface2);color:var(--muted)}
+
+/* BUTTONS */
+.btn{padding:9px 20px;border-radius:8px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;gap:7px;transition:.15s}
+.btn-prev{background:#fff;color:var(--mid);border:1.5px solid var(--border)}
+.btn-prev:hover{border-color:var(--mid);color:var(--text)}
+.btn-next{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(29,78,216,.25)}
+.btn-next:hover{background:#1e40af}
+.btn-submit{background:var(--green);color:#fff;padding:10px 26px;font-size:15px;box-shadow:0 2px 8px rgba(5,150,105,.25)}
+.btn-submit:hover{background:#047857}
+.step-ind{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* SUMMARY */
+.sum-hero{background:linear-gradient(135deg,var(--navy),#1e3a5f);border-radius:12px;padding:22px;color:#fff;margin-bottom:18px}
+.sum-hero-title{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:14px}
+.sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:500px){.sum-grid{grid-template-columns:1fr 1fr}}
+.sum-val{font-family:var(--mono);font-size:20px;font-weight:800;color:#7dd3fc;line-height:1}
+.sum-key{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px}
+
+.app-summary{border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.app-sum-head{padding:10px 16px;background:var(--surface2);display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
+.app-sum-body{padding:12px 16px}
+.sum-param-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--surface2);font-size:12px}
+.sum-param-row:last-child{border-bottom:none}
+.sum-pname{color:var(--mid);flex:1}
+.sum-pval{font-family:var(--mono);font-weight:700;font-size:13px}
+.sum-status{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.s-ok{background:var(--green-l);color:var(--green)}
+.s-warn{background:var(--amber-l);color:var(--amber)}
+.s-fail{background:var(--red-l);color:var(--red)}
+.s-na{background:var(--surface2);color:var(--muted)}
+
+/* SUCCESS */
+.success{display:none;text-align:center;padding:50px 30px}
+.success.show{display:block}
+.suc-icon{width:68px;height:68px;background:var(--green-l);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 20px;animation:pop .4s ease both}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.suc-title{font-size:21px;font-weight:800;margin-bottom:8px}
+.suc-sub{font-size:14px;color:var(--muted);line-height:1.7}
+.suc-ref{margin-top:20px;display:inline-block;background:var(--blue-l);border:1px solid #bfdbfe;border-radius:8px;padding:10px 22px;font-family:var(--mono);font-size:13px;color:var(--blue);font-weight:700}
+
+/* PHOTOS */
+.photo-upload-area{border:2px dashed var(--border);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:.2s;background:var(--surface)}
+.photo-upload-area:hover{border-color:var(--blue);background:var(--blue-l)}
+.photo-upload-icon{font-size:32px;margin-bottom:8px}
+.photo-upload-text{font-size:14px;font-weight:600;color:var(--mid);margin-bottom:4px}
+.photo-upload-hint{font-size:12px;color:var(--muted)}
+.photo-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-top:12px}
+.photo-thumb{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;background:var(--surface2)}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-thumb-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);color:#fff;font-size:10px;padding:3px 6px;font-family:var(--mono)}
+.photo-remove{position:absolute;top:4px;right:4px;background:rgba(220,38,38,.85);border:none;border-radius:50%;width:20px;height:20px;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.photo-caption-input{width:100%;padding:4px 8px;font-size:11px;border:1px solid var(--border);border-radius:4px;margin-top:4px;background:var(--surface)}
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">W</div>
+    <div class="nav-name">Sistema de Visitas Técnicas</div>
+  </div>
+  <div class="nav-tag">PTAR · PTAP · OLORES · TORRES · Res.0631/2015</div>
+</nav>
+
+<div class="stepbar" id="stepbar">
+  <div class="sb-item active" onclick="goTo(0)"><div class="sb-n">1</div><span class="sb-lbl">Empresa</span></div>
+  <div class="sb-item" onclick="goTo(1)"><div class="sb-n">2</div><span class="sb-lbl">Operativos</span></div>
+  <div class="sb-item" onclick="goTo(2)"><div class="sb-n">3</div><span class="sb-lbl">Aplicaciones</span></div>
+  <div class="sb-item" onclick="goTo(3)"><div class="sb-n">4</div><span class="sb-lbl">Mediciones</span></div>
+  <div class="sb-item" onclick="goTo(4)"><div class="sb-n">5</div><span class="sb-lbl">Productos</span></div>
+  <div class="sb-item" onclick="goTo(5)"><div class="sb-n">6</div><span class="sb-lbl">Observaciones</span></div>
+  <div class="sb-item" onclick="goTo(6)"><div class="sb-n">7</div><span class="sb-lbl">Resumen</span></div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════ PASO 1 — EMPRESA ═══════════════════════════ -->
+<div class="step active" id="step-0">
+
+  <!-- Memory banner -->
+  <div class="mem-banner hidden" id="memBanner">
+    <div class="mem-icon">🧠</div>
+    <div>
+      <div class="mem-title">VISITA ANTERIOR ENCONTRADA</div>
+      <div class="mem-text" id="memText">Se encontraron datos de la última visita. ¿Desea cargarlos?</div>
+      <button class="mem-btn" onclick="loadMemory()">✓ Cargar datos anteriores</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="c-icon ci-blue">🏭</div>
+      <div><h2>Datos de la Empresa</h2><p>Identificación del cliente — buscar por nombre para cargar visita anterior</p></div>
+    </div>
+    <div class="card-body">
+      <div class="row c2">
+        <div class="field">
+          <label>Razón Social <span class="req">*</span></label>
+          <input type="text" id="empresa" placeholder="Escribe el nombre de la empresa…" oninput="checkMemory(this.value)" autocomplete="off">
+          <div class="hint">Al escribir, se busca si hay visita anterior guardada</div>
+        </div>
+        <div class="field">
+          <label>Sector Industrial <span class="req">*</span> <span class="badge b-vmp">Define VMP</span></label>
+          <select id="sector">
+            <option value="">— Seleccionar —</option>
+            <optgroup label="Agroindustria">
+              <option value="alimentos">Alimentos y Bebidas</option>
+              <option value="lacteos">Lácteos</option>
+              <option value="carnicos">Cárnicos y Pescado</option>
+              <option value="azucar">Azúcar y Panela</option>
+              <option value="flores">Flores y Horticultura</option>
+            </optgroup>
+            <optgroup label="Industria">
+              <option value="textil">Textil y Confección</option>
+              <option value="curtiembres">Curtiembres y Cuero</option>
+              <option value="papel">Papel y Cartón</option>
+              <option value="quimica">Química y Petroquímica</option>
+              <option value="mineria">Minería y Metales</option>
+            </optgroup>
+            <optgroup label="Servicios">
+              <option value="hospital">Hospital y Clínica</option>
+              <option value="hotel">Hotel y Turismo</option>
+              <option value="municipal">Aguas Municipales</option>
+              <option value="otro">Otro</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+      <div class="row c3">
+        <div class="field">
+          <label>NIT</label>
+          <input type="text" id="nit" placeholder="900.123.456-7">
+        </div>
+        <div class="field">
+          <label>Ciudad <span class="req">*</span></label>
+          <input type="text" id="ciudad" placeholder="Ej: Medellín">
+        </div>
+        <div class="field">
+          <label>Fecha de Visita <span class="req">*</span></label>
+          <input type="date" id="fecha">
+        </div>
+      </div>
+      <div class="row c2">
+        <div class="field">
+          <label>Operador / Técnico <span class="req">*</span></label>
+          <input type="text" id="operador" placeholder="Nombre del operador en campo">
+        </div>
+        <div class="field">
+          <label>Correo destino informe <span class="req">*</span></label>
+          <input type="email" id="email" placeholder="gerencia@empresa.com">
+        </div>
+      </div>
+      <div class="row c2">
+        <div class="field">
+          <label>Tipo de visita</label>
+          <select id="tipoVisita">
+            <option value="inicial">Visita inicial / Primera caracterización</option>
+            <option value="seguimiento">Visita de seguimiento mensual</option>
+            <option value="emergencia">Atención de emergencia</option>
+            <option value="cierre">Cierre de ciclo / Evaluación final</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Condiciones climáticas durante muestreo</label>
+          <select id="clima">
+            <option value="">— Seleccionar —</option>
+            <option value="seco">Tiempo seco / sin lluvia</option>
+            <option value="lluvia_leve">Lluvia leve</option>
+            <option value="lluvia_fuerte">Lluvia fuerte / tormenta</option>
+            <option value="post_lluvia">Post-lluvia (< 6 horas)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card-foot">
+      <span></span>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span class="step-ind">1 / 7</span>
+        <button class="btn btn-next" onclick="goTo(1)">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ PASO 2 — OPERATIVOS ═══════════════════════════ -->
+<div class="step" id="step-1">
+  <div class="card">
+    <div class="card-head">
+      <div class="c-icon ci-teal">⚙️</div>
+      <div><h2>Parámetros Operativos Generales</h2><p>Condiciones de operación de la planta — aplican a todas las aplicaciones</p></div>
+    </div>
+    <div class="card-body">
+      <div class="row c3">
+        <div class="field">
+          <label>Caudal diseño <span class="req">*</span> <span class="badge b-unit">L/s</span></label>
+          <input type="number" id="caudal" placeholder="0.00" step="0.01" min="0" oninput="calcQ()">
+        </div>
+        <div class="field">
+          <label>Horas/día <span class="req">*</span> <span class="badge b-unit">h</span></label>
+          <input type="number" id="horas" placeholder="8" min="1" max="24" oninput="calcQ()">
+        </div>
+        <div class="field">
+          <label>Días/semana <span class="req">*</span> <span class="badge b-unit">d</span></label>
+          <input type="number" id="dias" placeholder="5" min="1" max="7" oninput="calcQ()">
+        </div>
+      </div>
+      <div class="row c3">
+        <div class="field">
+          <label>Caudal diario <span class="badge b-auto">AUTO</span></label>
+          <div class="computed" id="qDia">— m³/día</div>
+        </div>
+        <div class="field">
+          <label>Caudal semanal <span class="badge b-auto">AUTO</span></label>
+          <div class="computed" id="qSem">— m³/sem</div>
+        </div>
+        <div class="field">
+          <label>Caudal mensual <span class="badge b-auto">AUTO</span></label>
+          <div class="computed" id="qMes">— m³/mes</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="row c2">
+        <div class="field">
+          <label>Sistema de tratamiento principal</label>
+          <select id="sistema">
+            <option value="">— Seleccionar —</option>
+            <option value="fisicoquimico">Físico-químico (coag./floc.)</option>
+            <option value="biologico">Biológico (lodos activos, UASB)</option>
+            <option value="combinado">Combinado físico-químico + biológico</option>
+            <option value="filtros">Filtración y membranas</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Estado general de la planta</label>
+          <select id="estadoPlanta">
+            <option value="">— Seleccionar —</option>
+            <option value="optimo">Óptimo — Operando sin problemas</option>
+            <option value="regular">Regular — Con algunas anomalías</option>
+            <option value="critico">Crítico — Requiere intervención urgente</option>
+            <option value="parada">Parada / Mantenimiento</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-prev" onclick="goTo(0)">← Anterior</button>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span class="step-ind">2 / 7</span>
+        <button class="btn btn-next" onclick="goTo(2)">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ PASO 3 — APLICACIONES ═══════════════════════════ -->
+<div class="step" id="step-2">
+  <div class="card">
+    <div class="card-head">
+      <div class="c-icon ci-violet">🔧</div>
+      <div><h2>Selección de Aplicaciones</h2><p>Marque las aplicaciones presentes en esta empresa</p></div>
+    </div>
+    <div class="card-body">
+      <div class="app-grid">
+        <div class="app-toggle">
+          <input type="checkbox" id="app_ptar" value="ptar" onchange="renderApps()">
+          <label for="app_ptar">
+            <span class="app-emoji">💧</span>
+            <div class="app-info"><strong>PTAR</strong><span>Aguas Residuales</span></div>
+            <div class="app-check">✓</div>
+          </label>
+        </div>
+        <div class="app-toggle">
+          <input type="checkbox" id="app_ptap" value="ptap" onchange="renderApps()">
+          <label for="app_ptap">
+            <span class="app-emoji">🚰</span>
+            <div class="app-info"><strong>PTAP</strong><span>Agua Potable</span></div>
+            <div class="app-check">✓</div>
+          </label>
+        </div>
+        <div class="app-toggle">
+          <input type="checkbox" id="app_olor" value="olor" onchange="renderApps()">
+          <label for="app_olor">
+            <span class="app-emoji">💨</span>
+            <div class="app-info"><strong>Control de Olores</strong><span>Neutralización biológica/química</span></div>
+            <div class="app-check">✓</div>
+          </label>
+        </div>
+        <div class="app-toggle">
+          <input type="checkbox" id="app_torre" value="torre" onchange="renderApps()">
+          <label for="app_torre">
+            <span class="app-emoji">🏗️</span>
+            <div class="app-info"><strong>Torre de Enfriamiento</strong><span>Agua industrial / circuito cerrado</span></div>
+            <div class="app-check">✓</div>
+          </label>
+        </div>
+      </div>
+      <div class="hint" style="margin-top:8px">Puede seleccionar varias. Para cada aplicación se configurarán sus puntos de medición y productos específicos.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-prev" onclick="goTo(1)">← Anterior</button>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span class="step-ind">3 / 7</span>
+        <button class="btn btn-next" onclick="goTo(3)">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ PASO 4 — MEDICIONES ═══════════════════════════ -->
+<div class="step" id="step-3">
+  <div class="card">
+    <div class="card-head">
+      <div class="c-icon ci-amber">🔬</div>
+      <div><h2>Puntos de Medición Fisicoquímica</h2><p>Agregue puntos por aplicación — hasta 10 por sistema</p></div>
+    </div>
+    <div class="card-body" id="measureBody">
+      <p style="color:var(--muted);font-size:13px">← Primero seleccione al menos una aplicación en el Paso 3</p>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-prev" onclick="goTo(2)">← Anterior</button>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span class="step-ind">4 / 7</span>
+        <button class="btn btn-next" onclick="goTo(4)">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ PASO 5 — PRODUCTOS ═══════════════════════════ -->
+<div class="step" id="step-4">
+  <div class="card">
+    <div class="card-head">
+      <div class="c-icon ci-green">🧪</div>
+      <div><h2>Productos Aplicados</h2><p>Registre los productos utilizados en cada aplicación</p></div>
+    </div>
+    <div class="card-body" id="productsBody">
+      <p style="color:var(--muted);font-size:13px">← Seleccione aplicaciones en el Paso 3 para ver esta sección</p>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-prev" onclick="goTo(3)">← Anterior</button>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span class="step-ind">5 / 7</span>
+        <button class="btn btn-next" onclick="goTo(5)">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ PASO 6 — OBSERVACIONES ═══════════════════════════ -->
+<div class="step" id="step-5">
+  <div class="card">
+    <div class="card-head">
+      <div class="c-icon ci-blue">📋</div>
+      <div><h2>Observaciones y Notas de Campo</h2><p>Información cualitativa y contexto para el informe</p></div>
+    </div>
+    <div class="card-body">
+      <div class="row c2">
+        <div class="field">
+          <label>Color del efluente</label>
+          <select id="color">
+            <option value="">— Seleccionar —</option>
+            <option value="incolora">Incolora / transparente</option>
+            <option value="amarilla">Amarilla / dorada</option>
+            <option value="marron">Marrón / café</option>
+            <option value="gris">Gris</option>
+            <option value="negra">Negra / oscura</option>
+            <option value="verdosa">Verdosa</option>
+            <option value="lechosa">Lechosa / blanca turbia</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Olor predominante</label>
+          <select id="olor">
+            <option value="">— Seleccionar —</option>
+            <option value="ninguno">Sin olor apreciable</option>
+            <option value="sulfuros">Huevo podrido (sulfuros)</option>
+            <option value="amoniaco">Amoniaco</option>
+            <option value="organico">Orgánico / putrefacción</option>
+            <option value="quimico">Químico / solventes</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="row c2">
+        <div class="field">
+          <label>Presencia de espumas</label>
+          <select id="espumas">
+            <option value="no">No</option>
+            <option value="leve">Leve</option>
+            <option value="moderada">Moderada</option>
+            <option value="excesiva">Excesiva</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Variabilidad del caudal</label>
+          <select id="variab">
+            <option value="constante">Constante</option>
+            <option value="moderada">Moderada</option>
+            <option value="alta">Alta variabilidad</option>
+            <option value="picos">Con picos puntuales</option>
+          </select>
+        </div>
+      </div>
+      <div class="row c1">
+        <div class="field">
+          <label>Descripción del proceso productivo</label>
+          <textarea id="proceso" placeholder="Ej: Lavado de equipos de producción de queso, dos turnos de 8h, limpieza con detergentes clorados…"></textarea>
+        </div>
+      </div>
+      <div class="row c1">
+        <div class="field">
+          <label>Problemas identificados en la visita</label>
+          <textarea id="problemas" placeholder="Ej: Efluente supera VMP de SST. Formación de espumas en clarificador. Olor persistente…"></textarea>
+        </div>
+      </div>
+      <div class="row c1">
+        <div class="field">
+          <label>Acciones correctivas recomendadas</label>
+          <textarea id="acciones" placeholder="Ej: Aumentar dosis de coagulante a 60 mg/L. Revisar sistema de aireación. Limpiar filtros…"></textarea>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- FOTOS DE CAMPO -->
+      <div class="row c1">
+        <div class="field">
+          <label>📷 Fotos de la visita</label>
+          <div class="photo-upload-area" id="photoArea" onclick="document.getElementById('photoInput').click()">
+            <div class="photo-upload-icon">📷</div>
+            <div class="photo-upload-text">Toca aquí para tomar fotos o seleccionar desde galería</div>
+            <div class="photo-upload-hint">Puedes subir hasta 10 fotos (JPG, PNG)</div>
+          </div>
+          <input type="file" id="photoInput" accept="image/*" multiple capture="environment"
+                 style="display:none" onchange="handlePhotos(this)">
+          <div id="photoPreview" class="photo-preview-grid"></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- FIRMA DEL TÉCNICO -->
+      <div style="background:var(--navy);border-radius:10px;padding:16px 18px;margin-top:4px">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:12px">✍️ Datos del técnico que realiza el informe</div>
+        <div class="row c2" style="margin-bottom:0">
+          <div class="field">
+            <label style="color:rgba(255,255,255,.85)">Nombre completo <span class="req">*</span></label>
+            <input type="text" id="tecnicoNombre" placeholder="Nombre del técnico" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff">
+          </div>
+          <div class="field">
+            <label style="color:rgba(255,255,255,.85)">Cargo</label>
+            <input type="text" id="tecnicoCargo" placeholder="Ej: Ing. Ambiental, Técnico PTAR…" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff">
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,.4);font-family:var(--mono)">Empresa: TQI</div>
+      </div>
+
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-prev" onclick="goTo(4)">← Anterior</button>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span class="step-ind">6 / 7</span>
+        <button class="btn btn-next" onclick="goTo(6);buildSummary()">Ver Resumen →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ PASO 7 — RESUMEN ═══════════════════════════ -->
+<div class="step" id="step-6">
+  <div class="card">
+    <div class="card-head">
+      <div class="c-icon ci-blue">✅</div>
+      <div><h2>Resumen Final</h2><p>Revise antes de enviar — los datos se guardarán automáticamente para la próxima visita</p></div>
+    </div>
+    <div class="card-body" id="summaryBody">
+    </div>
+    <div class="card-foot" id="summaryFoot">
+      <button class="btn btn-prev" onclick="goTo(5)">← Anterior</button>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span class="step-ind">7 / 7</span>
+        <button class="btn btn-submit" onclick="submitForm()">📤 Guardar y Generar Informe</button>
+      </div>
+    </div>
+    <div class="success" id="successScreen">
+      <div class="suc-icon">✅</div>
+      <div class="suc-title">¡Visita registrada y guardada!</div>
+      <div class="suc-sub">Los datos han sido guardados para la próxima visita.<br>El informe técnico se está generando y llegará a<br><strong id="sucEmail">—</strong> en los próximos minutos.</div>
+      <div class="suc-ref" id="sucRef">REF: PTAR-2025-0001</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let curStep = 0;
+const APPS_CONFIG = {
+  ptar:  { label:'PTAR — Aguas Residuales',     emoji:'💧', cls:'ptar-block',  defaultPoints:['Entrada (Agua cruda)','Salida (Efluente tratado)'], params:['pH','SST','SDT','Cond','DBO','DQO','Turb','Temp'] },
+  ptap:  { label:'PTAP — Agua Potable',          emoji:'🚰', cls:'ptap-block',  defaultPoints:['Captación','Salida potabilización'], params:['pH','Turb','Cond','Cloro libre','Dur total','Alcal'] },
+  olor:  { label:'Control de Olores',            emoji:'💨', cls:'olor-block',  defaultPoints:['Zona de lodos','Reactor biológico'], params:['H₂S ppm','NH₃ ppm','Intensidad (1-5)','Temperatura'] },
+  torre: { label:'Torre de Enfriamiento',        emoji:'🏗️', cls:'torre-block', defaultPoints:['Agua de entrada','Agua de recirculación'], params:['pH','Cond','Dureza','Cloro libre','TDS','Temp'] },
+};
+const VMP = {
+  alimentos:{sst:150,dbo:600,dqo:1200}, lacteos:{sst:150,dbo:600,dqo:1200},
+  carnicos:{sst:200,dbo:800,dqo:1600},  azucar:{sst:200,dbo:700,dqo:1400},
+  flores:{sst:100,dbo:400,dqo:800},     textil:{sst:150,dbo:500,dqo:1000},
+  curtiembres:{sst:200,dbo:700,dqo:1400}, papel:{sst:200,dbo:600,dqo:1200},
+  quimica:{sst:150,dbo:500,dqo:1000},   mineria:{sst:300,dbo:300,dqo:600},
+  hospital:{sst:90,dbo:300,dqo:600},    hotel:{sst:90,dbo:300,dqo:600},
+  municipal:{sst:90,dbo:200,dqo:400},   otro:{sst:200,dbo:600,dqo:1200},
+};
+let pointCounters = { ptar:0, ptap:0, olor:0, torre:0 };
+let prodCounters  = { ptar:0, ptap:0, olor:0, torre:0 };
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+function goTo(n) {
+  document.getElementById('step-'+curStep).classList.remove('active');
+  curStep = n;
+  document.getElementById('step-'+curStep).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach((el,i)=>{
+    el.classList.remove('active','done');
+    if(i<n) el.classList.add('done');
+    else if(i===n) el.classList.add('active');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===3) renderMeasure();
+  if(n===4) renderProducts();
+}
+
+// ─── CAUDAL ──────────────────────────────────────────────────────────────────
+function calcQ(){
+  const q=parseFloat(document.getElementById('caudal').value)||0;
+  const h=parseFloat(document.getElementById('horas').value)||0;
+  const d=parseFloat(document.getElementById('dias').value)||0;
+  // q en L/s → m³/h = q*3.6, m³/día = q*3.6*h
+  const qm3h = q * 3.6;
+  document.getElementById('qDia').textContent  = q*h>0 ? (qm3h*h).toFixed(1)+' m³/día' : '— m³/día';
+  document.getElementById('qSem').textContent  = q*h*d>0 ? (qm3h*h*d).toFixed(1)+' m³/sem' : '— m³/sem';
+  document.getElementById('qMes').textContent  = q*h*d>0 ? (qm3h*h*d*4.33).toFixed(0)+' m³/mes' : '— m³/mes';
+}
+
+// ─── APP SELECTION → renders nothing here, triggered on step entry ────────────
+function renderApps(){ /* triggers on checkbox, actual render on step enter */ }
+
+// ─── RENDER MEASUREMENT STEP ─────────────────────────────────────────────────
+function renderMeasure(){
+  const body = document.getElementById('measureBody');
+  const active = getActiveApps();
+  if(!active.length){ body.innerHTML='<p style="color:var(--muted);font-size:13px">← Seleccione al menos una aplicación en el Paso 3</p>'; return; }
+  body.innerHTML = '';
+  active.forEach(appKey => {
+    const cfg = APPS_CONFIG[appKey];
+    // check if block already exists
+    if(document.getElementById('appblock-'+appKey)) return;
+    const block = document.createElement('div');
+    block.className = 'app-block '+cfg.cls;
+    block.id = 'appblock-'+appKey;
+    block.innerHTML = `
+      <div class="app-block-head" onclick="toggleBlock('appblock-${appKey}')">
+        <div class="app-block-title">${cfg.emoji} ${cfg.label}</div>
+        <span class="app-block-toggle">▼</span>
+      </div>
+      <div class="app-block-body">
+        <div class="points-header">
+          <span class="points-title">📍 Puntos de medición</span>
+          <button class="btn-add-point" onclick="addPoint('${appKey}')">+ Agregar punto</button>
+        </div>
+        <div id="points-${appKey}"></div>
+      </div>`;
+    body.appendChild(block);
+    pointCounters[appKey] = 0;
+    // add default points
+    cfg.defaultPoints.forEach(name => addPoint(appKey, name));
+  });
+}
+
+function toggleBlock(id){
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+function addPoint(appKey, defaultName=''){
+  const max = 10;
+  const container = document.getElementById('points-'+appKey);
+  if(!container) return;
+  if(container.children.length >= max){ alert('Máximo '+max+' puntos por aplicación'); return; }
+  const cfg = APPS_CONFIG[appKey];
+  const idx = ++pointCounters[appKey];
+  const pid = appKey+'-p'+idx;
+  const card = document.createElement('div');
+  card.className = 'point-card';
+  card.id = 'pc-'+pid;
+
+  const paramsHtml = cfg.params.map(p => {
+    const fid = pid+'-'+p.replace(/[^a-z0-9]/gi,'');
+    const isTemp = p.toLowerCase().includes('temp');
+    const isCond = p.toLowerCase().includes('cond');
+    const unit = p.includes('ppm')?'ppm': p.includes('pH')?'U': p.includes('Cond')||isCond?'µS/cm': p.includes('Temp')||isTemp?'°C': p.includes('SST')||p.includes('SDT')||p.includes('DBO')||p.includes('DQO')||p.includes('Dur')||p.includes('Alc')||p.includes('Cloro')||p.includes('TDS')?'mg/L': p.includes('Turb')?'NTU': '';
+    const isPh = p==='pH';
+    const phWrap = isPh ? `<div class="ph-wrap"><div class="ph-bar"><div class="ph-cur" id="cur-${fid}" style="left:50%"></div></div><div class="ph-labels"><span>0</span><span>7</span><span>14</span></div><span class="ph-tag tag-na" id="tag-${fid}">—</span></div>` : '';
+    return `<div class="param-field field">
+      <label>${p}<span class="param-unit">${unit}</span></label>
+      <input type="number" id="${fid}" placeholder="—" step="0.01" min="0" ${isPh?'max="14"':''} oninput="${isPh?`updatePhField('${fid}')`:''}" style="padding:7px 10px;font-size:13px;border-radius:6px">
+      ${phWrap}
+    </div>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="point-head">
+      <input class="point-name-input" type="text" value="${defaultName || 'Punto '+idx}" placeholder="Nombre del punto…" id="pname-${pid}">
+      <button class="btn-remove-point" onclick="removePoint('pc-${pid}')">✕</button>
+    </div>
+    <div class="point-body">
+      <div class="params-grid">${paramsHtml}</div>
+    </div>`;
+  container.appendChild(card);
+}
+
+function removePoint(cardId){
+  const el = document.getElementById(cardId);
+  if(el) el.remove();
+}
+
+function updatePhField(fid){
+  const val = parseFloat(document.getElementById(fid).value);
+  const cur = document.getElementById('cur-'+fid);
+  const tag = document.getElementById('tag-'+fid);
+  if(!cur||!tag) return;
+  if(isNaN(val)){ tag.className='ph-tag tag-na'; tag.textContent='—'; return; }
+  cur.style.left = Math.min(Math.max(val/14*100,0),100)+'%';
+  if(val<6){tag.className='ph-tag tag-fail';tag.textContent='pH '+val+' — ÁCIDO · Requiere corrección';}
+  else if(val>9){tag.className='ph-tag tag-fail';tag.textContent='pH '+val+' — ALCALINO · Requiere corrección';}
+  else if(val<6.5||val>8.5){tag.className='ph-tag tag-warn';tag.textContent='pH '+val+' — En zona límite';}
+  else{tag.className='ph-tag tag-ok';tag.textContent='pH '+val+' — ✓ Dentro del VMP';}
+}
+
+// ─── PRODUCTS STEP ───────────────────────────────────────────────────────────
+function renderProducts(){
+  const body = document.getElementById('productsBody');
+  const active = getActiveApps();
+  if(!active.length){ body.innerHTML='<p style="color:var(--muted);font-size:13px">← Seleccione aplicaciones en el Paso 3</p>'; return; }
+  body.innerHTML = '';
+  active.forEach(appKey => {
+    if(document.getElementById('prodsec-'+appKey)) return;
+    const cfg = APPS_CONFIG[appKey];
+    const section = document.createElement('div');
+    section.id = 'prodsec-'+appKey;
+    section.innerHTML = `
+      <div class="products-section">
+        <div class="products-title">
+          ${cfg.emoji} ${cfg.label}
+          <button class="btn-add-prod" onclick="addProduct('${appKey}')">+ Agregar producto</button>
+        </div>
+        <table class="prod-table">
+          <thead><tr>
+            <th style="width:26%">Nombre del producto</th>
+            <th style="width:18%">Función</th>
+            <th style="width:14%">Dosis (mg/L)</th>
+            <th style="width:14%">Cant. usada (mes)</th>
+            <th style="width:10%">Unidad</th>
+            <th style="width:14%">Punto aplicación</th>
+            <th style="width:4%"></th>
+          </tr></thead>
+          <tbody id="prodbody-${appKey}"></tbody>
+        </table>
+        <button class="btn-add-prod" onclick="addProduct('${appKey}')" style="margin-top:6px">+ Agregar producto</button>
+      </div>
+      ${appKey !== active[active.length-1] ? '<div class="divider"></div>' : ''}`;
+    body.appendChild(section);
+    prodCounters[appKey] = 0;
+    addProduct(appKey); // start with 1 row
+  });
+}
+
+function addProduct(appKey){
+  const tbody = document.getElementById('prodbody-'+appKey);
+  if(!tbody) return;
+  const idx = ++prodCounters[appKey];
+  const rid = appKey+'-prod-'+idx;
+  const tr = document.createElement('tr');
+  tr.id = rid;
+  // build point options from existing points
+  const pointOpts = getPointNames(appKey).map(n=>`<option value="${n}">${n}</option>`).join('');
+  tr.innerHTML = `
+    <td><input type="text" id="${rid}-nombre" placeholder="Ej: Sulfato de Al…"></td>
+    <td><select id="${rid}-func">
+      <option value="">—</option>
+      <option value="coagulante">Coagulante</option>
+      <option value="floculante">Floculante</option>
+      <option value="ph_corrector">Corrector pH</option>
+      <option value="desinfectante">Desinfectante</option>
+      <option value="antiespumante">Antiespumante</option>
+      <option value="biocida">Biocida</option>
+      <option value="neutralizador">Neutralizador olor</option>
+      <option value="otro">Otro</option>
+    </select></td>
+    <td><input type="number" id="${rid}-dosis" placeholder="0" min="0" step="0.1"></td>
+    <td><input type="number" id="${rid}-cant" placeholder="0" min="0" step="0.1"></td>
+    <td><select id="${rid}-unid">
+      <option value="kg">kg</option><option value="L">L</option>
+      <option value="g">g</option><option value="mL">mL</option>
+    </select></td>
+    <td><select id="${rid}-punto">
+      <option value="general">General</option>
+      ${pointOpts}
+    </select></td>
+    <td><button class="btn-remove-prod" onclick="document.getElementById('${rid}').remove()">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function getPointNames(appKey){
+  const container = document.getElementById('points-'+appKey);
+  if(!container) return [];
+  return Array.from(container.querySelectorAll('.point-name-input')).map(i=>i.value).filter(Boolean);
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function getActiveApps(){
+  return ['ptar','ptap','olor','torre'].filter(a => document.getElementById('app_'+a)?.checked);
+}
+
+// ─── MEMORY ──────────────────────────────────────────────────────────────────
+function checkMemory(name){
+  if(name.length < 3){ document.getElementById('memBanner').classList.add('hidden'); return; }
+  const key = 'ptar_visit_'+name.trim().toLowerCase().replace(/\s+/g,'_');
+  try {
+    const saved = sessionStorage.getItem(key);
+    if(saved){
+      const data = JSON.parse(saved);
+      const banner = document.getElementById('memBanner');
+      document.getElementById('memText').textContent =
+        `Última visita: ${data.fecha || '—'} · Caudal: ${data.caudal||'—'} m³/h · ${data.apps?.join(', ')||''}. ¿Cargar estos datos?`;
+      banner.classList.remove('hidden');
+      banner._memKey = key;
+    } else {
+      document.getElementById('memBanner').classList.add('hidden');
+    }
+  } catch(e){}
+}
+
+function loadMemory(){
+  const banner = document.getElementById('memBanner');
+  const key = banner._memKey;
+  if(!key) return;
+  try {
+    const data = JSON.parse(sessionStorage.getItem(key));
+    if(!data) return;
+    if(data.sector)   document.getElementById('sector').value   = data.sector;
+    if(data.nit)      document.getElementById('nit').value      = data.nit;
+    if(data.ciudad)   document.getElementById('ciudad').value   = data.ciudad;
+    if(data.operador) document.getElementById('operador').value = data.operador;
+    if(data.email)    document.getElementById('email').value    = data.email;
+    if(data.caudal)   { document.getElementById('caudal').value = data.caudal; }
+    if(data.horas)    document.getElementById('horas').value    = data.horas;
+    if(data.dias)     document.getElementById('dias').value     = data.dias;
+    if(data.sistema)  document.getElementById('sistema').value  = data.sistema;
+    calcQ();
+    if(data.apps) data.apps.forEach(a => {
+      const cb = document.getElementById('app_'+a);
+      if(cb) cb.checked = true;
+    });
+    banner.classList.add('hidden');
+    // Show confirmation
+    const toast = document.createElement('div');
+    toast.textContent = '✓ Datos de la última visita cargados';
+    Object.assign(toast.style, {position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:var_green(),color:'#fff',padding:'10px 22px',borderRadius:'8px',fontWeight:'600',fontSize:'14px',zIndex:999,boxShadow:'0 4px 12px rgba(0,0,0,.2)',fontFamily:"'Figtree',sans-serif"});
+    document.body.appendChild(toast);
+    setTimeout(()=>toast.remove(), 3000);
+  } catch(e){ console.error(e); }
+}
+
+function var_green(){ return '#059669'; }
+
+function saveMemory(){
+  const empresa = document.getElementById('empresa').value.trim();
+  if(!empresa) return;
+  const key = 'ptar_visit_'+empresa.toLowerCase().replace(/\s+/g,'_');
+  const data = {
+    empresa, fecha: document.getElementById('fecha').value,
+    sector: document.getElementById('sector').value,
+    nit: document.getElementById('nit').value,
+    ciudad: document.getElementById('ciudad').value,
+    operador: document.getElementById('operador').value,
+    email: document.getElementById('email').value,
+    caudal: document.getElementById('caudal').value,
+    horas: document.getElementById('horas').value,
+    dias: document.getElementById('dias').value,
+    sistema: document.getElementById('sistema').value,
+    apps: getActiveApps(),
+    savedAt: new Date().toISOString(),
+  };
+  try { sessionStorage.setItem(key, JSON.stringify(data)); } catch(e){}
+}
+
+// ─── SUMMARY ─────────────────────────────────────────────────────────────────
+function buildSummary(){
+  const body = document.getElementById('summaryBody');
+  const empresa = document.getElementById('empresa').value || '—';
+  const sector  = document.getElementById('sector').value;
+  const fecha   = document.getElementById('fecha').value;
+  const caudal  = document.getElementById('caudal').value || '—';
+  const h = parseFloat(document.getElementById('horas').value)||0;
+  const d = parseFloat(document.getElementById('dias').value)||0;
+  const q = parseFloat(caudal)||0;
+  const mensual = q&&h&&d ? (q*h*d*4.33).toFixed(0)+' m³/mes' : '—';
+  const apps = getActiveApps();
+
+  let appSummaryHtml = '';
+  apps.forEach(appKey => {
+    const cfg = APPS_CONFIG[appKey];
+    const container = document.getElementById('points-'+appKey);
+    const points = container ? Array.from(container.querySelectorAll('.point-card')) : [];
+    const vmp = VMP[sector] || {};
+
+    const rowsHtml = points.map(pc => {
+      const pname = pc.querySelector('.point-name-input')?.value || '—';
+      const phInp = pc.querySelector('input[id*="-pH"]');
+      const sstInp = pc.querySelector('input[id*="-SST"]');
+      const phVal = phInp ? parseFloat(phInp.value) : NaN;
+      const sstVal = sstInp ? parseFloat(sstInp.value) : NaN;
+      let phStatus = '<span class="sum-status s-na">—</span>';
+      let sstStatus = '<span class="sum-status s-na">—</span>';
+      if(!isNaN(phVal)){
+        if(phVal<6||phVal>9) phStatus=`<span class="sum-status s-fail">pH ${phVal} ✗</span>`;
+        else phStatus=`<span class="sum-status s-ok">pH ${phVal} ✓</span>`;
+      }
+      if(!isNaN(sstVal) && vmp.sst){
+        if(sstVal>vmp.sst) sstStatus=`<span class="sum-status s-fail">SST ${sstVal}>${vmp.sst} ✗</span>`;
+        else sstStatus=`<span class="sum-status s-ok">SST ${sstVal} ✓</span>`;
+      }
+      return `<div class="sum-param-row">
+        <span class="sum-pname">📍 ${pname}</span>
+        ${phStatus} ${sstStatus}
+      </div>`;
+    }).join('');
+
+    appSummaryHtml += `<div class="app-summary">
+      <div class="app-sum-head">${cfg.emoji} ${cfg.label}</div>
+      <div class="app-sum-body">
+        ${rowsHtml || '<span style="color:var(--muted);font-size:12px">Sin puntos registrados</span>'}
+      </div>
+    </div>`;
+  });
+
+  body.innerHTML = `
+    <div class="sum-hero">
+      <div class="sum-hero-title">◉ Resumen de la visita</div>
+      <div class="sum-grid">
+        <div><div class="sum-val">${empresa.length>12?empresa.slice(0,12)+'…':empresa}</div><div class="sum-key">Empresa</div></div>
+        <div><div class="sum-val">${fecha?fecha.split('-').reverse().join('/'):'—'}</div><div class="sum-key">Fecha visita</div></div>
+        <div><div class="sum-val">${apps.length} aplicac.</div><div class="sum-key">Aplicaciones</div></div>
+        <div><div class="sum-val">${caudal} L/s</div><div class="sum-key">Caudal diseño</div></div>
+        <div><div class="sum-val">${mensual}</div><div class="sum-key">Vol. mensual</div></div>
+        <div><div class="sum-val">${countPoints()} puntos</div><div class="sum-key">Puntos medición</div></div>
+      </div>
+    </div>
+    ${appSummaryHtml}
+    <div style="background:var(--violet-l);border:1px solid #c4b5fd;border-radius:10px;padding:14px 18px;margin-top:12px;font-size:13px;color:#5b21b6;line-height:1.6">
+      🧠 <strong>Al enviar</strong>, los datos operativos se guardarán automáticamente. En la próxima visita, al escribir el nombre de la empresa, podrá recuperar todos estos parámetros con un solo clic.
+    </div>`;
+}
+
+function countPoints(){
+  let total = 0;
+  getActiveApps().forEach(a => {
+    const c = document.getElementById('points-'+a);
+    if(c) total += c.children.length;
+  });
+  return total;
+}
+
+// ─── RECOPILAR MEDICIONES ────────────────────────────────────────────────────
+function recopilarMediciones(){
+  const result = [];
+  getActiveApps().forEach(appKey => {
+    const container = document.getElementById('points-'+appKey);
+    if(!container) return;
+    container.querySelectorAll('.point-card').forEach(pc => {
+      const punto = pc.querySelector('.point-name-input')?.value || 'Sin nombre';
+      const med = { aplicacion: appKey.toUpperCase(), punto };
+      pc.querySelectorAll('input[type=number]').forEach(inp => {
+        const id = inp.id || '';
+        if(id.includes('pH'))   med.pH   = inp.value;
+        if(id.includes('SST'))  med.SST  = inp.value;
+        if(id.includes('SDT'))  med.SDT  = inp.value;
+        if(id.includes('Cond')) med.Cond = inp.value;
+        if(id.includes('DBO'))  med.DBO  = inp.value;
+        if(id.includes('DQO'))  med.DQO  = inp.value;
+        if(id.includes('Turb')) med.Turb = inp.value;
+        if(id.includes('Temp')) med.Temp = inp.value;
+      });
+      result.push(med);
+    });
+  });
+  return result;
+}
+
+// ─── RECOPILAR PRODUCTOS ─────────────────────────────────────────────────────
+function recopilarProductos(){
+  const result = [];
+  getActiveApps().forEach(appKey => {
+    const tbody = document.getElementById('prodbody-'+appKey);
+    if(!tbody) return;
+    tbody.querySelectorAll('tr').forEach(tr => {
+      const nombre = tr.querySelector('[id$="-nombre"]')?.value;
+      if(!nombre) return;
+      result.push({
+        aplicacion: appKey.toUpperCase(),
+        nombre,
+        funcion:   tr.querySelector('[id$="-func"]')?.value   || '',
+        dosis:     tr.querySelector('[id$="-dosis"]')?.value  || '',
+        cantidad:  tr.querySelector('[id$="-cant"]')?.value   || '',
+        unidad:    tr.querySelector('[id$="-unid"]')?.value   || '',
+        punto:     tr.querySelector('[id$="-punto"]')?.value  || 'General',
+      });
+    });
+  });
+  return result;
+}
+
+// ─── SUBMIT ──────────────────────────────────────────────────────────────────
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwr9enEdJUQVMBeJOy2fwuhTrfr6qyYJ-rHG6RAE4Y34yPc1cT7bGqrVWVS2zEHboTOug/exec';
+
+function submitForm(){
+  const empresa  = document.getElementById('empresa').value;
+  const email    = document.getElementById('email').value;
+  const sector   = document.getElementById('sector').value;
+  const operador = document.getElementById('operador').value;
+  if(!empresa||!email||!sector||!operador){
+    alert('Complete los campos obligatorios: Empresa, Sector, Operador y Correo.');
+    goTo(0); return;
+  }
+  saveMemory();
+
+  // Mostrar pantalla de éxito de inmediato
+  document.getElementById('summaryBody').style.display = 'none';
+  document.getElementById('summaryFoot').style.display = 'none';
+  document.getElementById('successScreen').classList.add('show');
+  document.getElementById('sucEmail').textContent = email;
+  const ref = 'VT-'+new Date().getFullYear()+'-'+String(Math.floor(Math.random()*9000)+1000);
+  document.getElementById('sucRef').textContent = 'REF: '+ref;
+
+  // Enviar datos al Apps Script en segundo plano
+  const payload = {
+    empresa, email, sector, operador,
+    nit:          document.getElementById('nit').value,
+    ciudad:       document.getElementById('ciudad').value,
+    fecha:        document.getElementById('fecha').value,
+    tipoVisita:   document.getElementById('tipoVisita').value,
+    caudal:       document.getElementById('caudal').value,
+    horas:        document.getElementById('horas').value,
+    dias:         document.getElementById('dias').value,
+    sistema:      document.getElementById('sistema').value,
+    estadoPlanta: document.getElementById('estadoPlanta').value,
+    color:        document.getElementById('color').value,
+    olor:         document.getElementById('olor').value,
+    espumas:      document.getElementById('espumas').value,
+    variab:       document.getElementById('variab').value,
+    proceso:      document.getElementById('proceso').value,
+    problemas:    document.getElementById('problemas').value,
+    acciones:     document.getElementById('acciones').value,
+    apps:         getActiveApps(),
+    mediciones:   recopilarMediciones(),
+    productos:    recopilarProductos(),
+    tecnicoNombre: document.getElementById('tecnicoNombre').value,
+    tecnicoCargo:  document.getElementById('tecnicoCargo').value,
+    empresa_tqi:   'TQI',
+    fotos:         uploadedPhotos.map((p,i)=>({indice:i+1, caption:p.caption, dataUrl:p.dataUrl})),
+  };
+
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/json' }
+  }).catch(err => console.error('Error enviando datos:', err));
+}
+
+
+// ─── PHOTOS ──────────────────────────────────────────────────────────────────
+let uploadedPhotos = []; // {dataUrl, caption, name}
+
+function handlePhotos(input) {
+  const files = Array.from(input.files);
+  if(uploadedPhotos.length + files.length > 10){
+    alert('Máximo 10 fotos por visita'); return;
+  }
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      uploadedPhotos.push({ dataUrl: e.target.result, caption: '', name: file.name });
+      renderPhotoPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function renderPhotoPreview(){
+  const grid = document.getElementById('photoPreview');
+  grid.innerHTML = '';
+  uploadedPhotos.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'photo-thumb';
+    div.innerHTML = `
+      <img src="${p.dataUrl}" alt="Foto ${i+1}">
+      <div class="photo-thumb-label">Imagen ${i+1}</div>
+      <button class="photo-remove" onclick="removePhoto(${i})">✕</button>
+      <input class="photo-caption-input" type="text" placeholder="Descripción…"
+             value="${p.caption}" oninput="uploadedPhotos[${i}].caption=this.value">`;
+    grid.appendChild(div);
+  });
+  const area = document.getElementById('photoArea');
+  area.querySelector('.photo-upload-text').textContent =
+    uploadedPhotos.length > 0 ? `${uploadedPhotos.length} foto(s) cargada(s) — toca para agregar más` : 'Toca aquí para tomar fotos o seleccionar desde galería';
+}
+
+function removePhoto(i){
+  uploadedPhotos.splice(i, 1);
+  renderPhotoPreview();
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+document.getElementById('fecha').valueAsDate = new Date();
+</script>
+</body>
+</html>
