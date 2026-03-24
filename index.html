@@ -240,13 +240,13 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
 </nav>
 
 <div class="stepbar" id="stepbar">
-  <div class="sb-item active" onclick="goTo(0)"><div class="sb-n">1</div><span class="sb-lbl">Empresa</span></div>
-  <div class="sb-item" onclick="goTo(1)"><div class="sb-n">2</div><span class="sb-lbl">Operativos</span></div>
-  <div class="sb-item" onclick="goTo(2)"><div class="sb-n">3</div><span class="sb-lbl">Aplicaciones</span></div>
-  <div class="sb-item" onclick="goTo(3)"><div class="sb-n">4</div><span class="sb-lbl">Mediciones</span></div>
-  <div class="sb-item" onclick="goTo(4)"><div class="sb-n">5</div><span class="sb-lbl">Productos</span></div>
-  <div class="sb-item" onclick="goTo(5)"><div class="sb-n">6</div><span class="sb-lbl">Observaciones</span></div>
-  <div class="sb-item" onclick="goTo(6)"><div class="sb-n">7</div><span class="sb-lbl">Resumen</span></div>
+  <div class="sb-item active" id="sb-0"><div class="sb-n">1</div><span class="sb-lbl">Empresa</span></div>
+  <div class="sb-item" id="sb-1"><div class="sb-n">2</div><span class="sb-lbl">Aplicaciones</span></div>
+  <div class="sb-item" id="sb-2"><div class="sb-n">3</div><span class="sb-lbl">Operativos</span></div>
+  <div class="sb-item" id="sb-3"><div class="sb-n">4</div><span class="sb-lbl">Mediciones</span></div>
+  <div class="sb-item" id="sb-4"><div class="sb-n">5</div><span class="sb-lbl">Productos</span></div>
+  <div class="sb-item" id="sb-5"><div class="sb-n">6</div><span class="sb-lbl">Observaciones</span></div>
+  <div class="sb-item" id="sb-6"><div class="sb-n">7</div><span class="sb-lbl">Resumen</span></div>
 </div>
 
 <div class="wrap">
@@ -260,7 +260,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
     <div>
       <div class="mem-title">VISITA ANTERIOR ENCONTRADA</div>
       <div class="mem-text" id="memText">Se encontraron datos de la última visita. ¿Desea cargarlos?</div>
-      <button class="mem-btn" onclick="loadMemory()">✓ Cargar datos anteriores</button>
+      <button class="mem-btn" id="memBtn">✓ Cargar datos anteriores</button>
     </div>
   </div>
 
@@ -273,7 +273,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
       <div class="row c2">
         <div class="field">
           <label>Razón Social <span class="req">*</span></label>
-          <input type="text" id="empresa" placeholder="Escribe el nombre de la empresa…" oninput="checkMemory(this.value)" autocomplete="off">
+          <input type="text" id="empresa" placeholder="Escribe el nombre de la empresa…" autocomplete="off">
           <div class="hint">Al escribir, se busca si hay visita anterior guardada</div>
         </div>
         <div class="field">
@@ -353,14 +353,68 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
       <span></span>
       <div style="display:flex;align-items:center;gap:14px">
         <span class="step-ind">1 / 7</span>
-        <button class="btn btn-next" onclick="goTo(1)">Siguiente →</button>
+        <button class="btn btn-next" id="btn-next-0">Siguiente →</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════ PASO 2 — OPERATIVOS ═══════════════════════════ -->
+<!-- ═══════════════════════════ PASO 2 — APLICACIONES ═══════════════════════════ -->
 <div class="step" id="step-1">
+  <div class="card">
+    <div class="card-head">
+      <div class="c-icon ci-violet">🔧</div>
+      <div><h2>Selección de Aplicaciones</h2><p>Marque las aplicaciones presentes en esta empresa</p></div>
+    </div>
+    <div class="card-body">
+      <div class="app-grid">
+        <div class="app-toggle">
+          <input type="checkbox" id="app_ptar" value="ptar" >
+          <label for="app_ptar">
+            <span class="app-emoji">💧</span>
+            <div class="app-info"><strong>PTAR</strong><span>Aguas Residuales</span></div>
+            <div class="app-check">✓</div>
+          </label>
+        </div>
+        <div class="app-toggle">
+          <input type="checkbox" id="app_ptap" value="ptap" >
+          <label for="app_ptap">
+            <span class="app-emoji">🚰</span>
+            <div class="app-info"><strong>PTAP</strong><span>Agua Potable</span></div>
+            <div class="app-check">✓</div>
+          </label>
+        </div>
+        <div class="app-toggle">
+          <input type="checkbox" id="app_olor" value="olor" >
+          <label for="app_olor">
+            <span class="app-emoji">💨</span>
+            <div class="app-info"><strong>Control de Olores</strong><span>Neutralización biológica/química</span></div>
+            <div class="app-check">✓</div>
+          </label>
+        </div>
+        <div class="app-toggle">
+          <input type="checkbox" id="app_torre" value="torre" >
+          <label for="app_torre">
+            <span class="app-emoji">🏗️</span>
+            <div class="app-info"><strong>Torre de Enfriamiento</strong><span>Agua industrial / circuito cerrado</span></div>
+            <div class="app-check">✓</div>
+          </label>
+        </div>
+      </div>
+      <div class="hint" style="margin-top:8px">Puede seleccionar varias. Para cada aplicación se configurarán sus puntos de medición y productos específicos.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-prev" id="btn-prev-1">← Anterior</button>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span class="step-ind">2 / 7</span>
+        <button class="btn btn-next" id="btn-next-1">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ PASO 3 — OPERATIVOS ═══════════════════════════ -->
+<div class="step" id="step-2">
   <div class="card">
     <div class="card-head">
       <div class="c-icon ci-teal">⚙️</div>
@@ -369,16 +423,17 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
     <div class="card-body">
       <div class="row c3">
         <div class="field">
-          <label>Caudal diseño <span class="req">*</span> <span class="badge b-unit">L/s</span></label>
-          <input type="number" id="caudal" placeholder="0.00" step="0.01" min="0" oninput="calcQ()">
+          <label>Caudal operativo <span class="req">*</span> <span class="badge b-unit">L/s</span></label>
+          <input type="number" id="caudal" placeholder="0.00" step="0.01" min="0" >
+          <div class="hint">Caudal medido en campo durante la visita</div>
         </div>
         <div class="field">
           <label>Horas/día <span class="req">*</span> <span class="badge b-unit">h</span></label>
-          <input type="number" id="horas" placeholder="8" min="1" max="24" oninput="calcQ()">
+          <input type="number" id="horas" placeholder="8" min="1" max="24" >
         </div>
         <div class="field">
           <label>Días/semana <span class="req">*</span> <span class="badge b-unit">d</span></label>
-          <input type="number" id="dias" placeholder="5" min="1" max="7" oninput="calcQ()">
+          <input type="number" id="dias" placeholder="5" min="1" max="7" >
         </div>
       </div>
       <div class="row c3">
@@ -421,64 +476,10 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
       </div>
     </div>
     <div class="card-foot">
-      <button class="btn btn-prev" onclick="goTo(0)">← Anterior</button>
-      <div style="display:flex;align-items:center;gap:14px">
-        <span class="step-ind">2 / 7</span>
-        <button class="btn btn-next" onclick="goTo(2)">Siguiente →</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════ PASO 3 — APLICACIONES ═══════════════════════════ -->
-<div class="step" id="step-2">
-  <div class="card">
-    <div class="card-head">
-      <div class="c-icon ci-violet">🔧</div>
-      <div><h2>Selección de Aplicaciones</h2><p>Marque las aplicaciones presentes en esta empresa</p></div>
-    </div>
-    <div class="card-body">
-      <div class="app-grid">
-        <div class="app-toggle">
-          <input type="checkbox" id="app_ptar" value="ptar" onchange="renderApps()">
-          <label for="app_ptar">
-            <span class="app-emoji">💧</span>
-            <div class="app-info"><strong>PTAR</strong><span>Aguas Residuales</span></div>
-            <div class="app-check">✓</div>
-          </label>
-        </div>
-        <div class="app-toggle">
-          <input type="checkbox" id="app_ptap" value="ptap" onchange="renderApps()">
-          <label for="app_ptap">
-            <span class="app-emoji">🚰</span>
-            <div class="app-info"><strong>PTAP</strong><span>Agua Potable</span></div>
-            <div class="app-check">✓</div>
-          </label>
-        </div>
-        <div class="app-toggle">
-          <input type="checkbox" id="app_olor" value="olor" onchange="renderApps()">
-          <label for="app_olor">
-            <span class="app-emoji">💨</span>
-            <div class="app-info"><strong>Control de Olores</strong><span>Neutralización biológica/química</span></div>
-            <div class="app-check">✓</div>
-          </label>
-        </div>
-        <div class="app-toggle">
-          <input type="checkbox" id="app_torre" value="torre" onchange="renderApps()">
-          <label for="app_torre">
-            <span class="app-emoji">🏗️</span>
-            <div class="app-info"><strong>Torre de Enfriamiento</strong><span>Agua industrial / circuito cerrado</span></div>
-            <div class="app-check">✓</div>
-          </label>
-        </div>
-      </div>
-      <div class="hint" style="margin-top:8px">Puede seleccionar varias. Para cada aplicación se configurarán sus puntos de medición y productos específicos.</div>
-    </div>
-    <div class="card-foot">
-      <button class="btn btn-prev" onclick="goTo(1)">← Anterior</button>
+      <button class="btn btn-prev" id="btn-prev-2">← Anterior</button>
       <div style="display:flex;align-items:center;gap:14px">
         <span class="step-ind">3 / 7</span>
-        <button class="btn btn-next" onclick="goTo(3)">Siguiente →</button>
+        <button class="btn btn-next" id="btn-next-2">Siguiente →</button>
       </div>
     </div>
   </div>
@@ -495,10 +496,10 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
       <p style="color:var(--muted);font-size:13px">← Primero seleccione al menos una aplicación en el Paso 3</p>
     </div>
     <div class="card-foot">
-      <button class="btn btn-prev" onclick="goTo(2)">← Anterior</button>
+      <button class="btn btn-prev" id="btn-prev-3">← Anterior</button>
       <div style="display:flex;align-items:center;gap:14px">
         <span class="step-ind">4 / 7</span>
-        <button class="btn btn-next" onclick="goTo(4)">Siguiente →</button>
+        <button class="btn btn-next" id="btn-next-3">Siguiente →</button>
       </div>
     </div>
   </div>
@@ -515,10 +516,10 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
       <p style="color:var(--muted);font-size:13px">← Seleccione aplicaciones en el Paso 3 para ver esta sección</p>
     </div>
     <div class="card-foot">
-      <button class="btn btn-prev" onclick="goTo(3)">← Anterior</button>
+      <button class="btn btn-prev" id="btn-prev-4">← Anterior</button>
       <div style="display:flex;align-items:center;gap:14px">
         <span class="step-ind">5 / 7</span>
-        <button class="btn btn-next" onclick="goTo(5)">Siguiente →</button>
+        <button class="btn btn-next" id="btn-next-4">Siguiente →</button>
       </div>
     </div>
   </div>
@@ -598,22 +599,6 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
         </div>
       </div>
 
-      <div class="divider"></div>
-
-      <!-- FOTOS DE CAMPO -->
-      <div class="row c1">
-        <div class="field">
-          <label>📷 Fotos de la visita</label>
-          <div class="photo-upload-area" id="photoArea" onclick="document.getElementById('photoInput').click()">
-            <div class="photo-upload-icon">📷</div>
-            <div class="photo-upload-text">Toca aquí para tomar fotos o seleccionar desde galería</div>
-            <div class="photo-upload-hint">Puedes subir hasta 10 fotos (JPG, PNG)</div>
-          </div>
-          <input type="file" id="photoInput" accept="image/*" multiple capture="environment"
-                 style="display:none" onchange="handlePhotos(this)">
-          <div id="photoPreview" class="photo-preview-grid"></div>
-        </div>
-      </div>
 
       <div class="divider"></div>
 
@@ -635,10 +620,10 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
 
     </div>
     <div class="card-foot">
-      <button class="btn btn-prev" onclick="goTo(4)">← Anterior</button>
+      <button class="btn btn-prev" id="btn-prev-5">← Anterior</button>
       <div style="display:flex;align-items:center;gap:14px">
         <span class="step-ind">6 / 7</span>
-        <button class="btn btn-next" onclick="goTo(6);buildSummary()">Ver Resumen →</button>
+        <button class="btn btn-next" id="btn-next-5">Ver Resumen →</button>
       </div>
     </div>
   </div>
@@ -654,10 +639,10 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
     <div class="card-body" id="summaryBody">
     </div>
     <div class="card-foot" id="summaryFoot">
-      <button class="btn btn-prev" onclick="goTo(5)">← Anterior</button>
+      <button class="btn btn-prev" id="btn-prev-6">← Anterior</button>
       <div style="display:flex;align-items:center;gap:14px">
         <span class="step-ind">7 / 7</span>
-        <button class="btn btn-submit" onclick="submitForm()">📤 Guardar y Generar Informe</button>
+        <button class="btn btn-submit" id="btn-submit">📤 Guardar y Generar Informe</button>
       </div>
     </div>
     <div class="success" id="successScreen">
@@ -1098,7 +1083,7 @@ function recopilarProductos(){
 }
 
 // ─── SUBMIT ──────────────────────────────────────────────────────────────────
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwr9enEdJUQVMBeJOy2fwuhTrfr6qyYJ-rHG6RAE4Y34yPc1cT7bGqrVWVS2zEHboTOug/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzLr4euWXeoSE-kzBYel1bXsq8z1B339U7KNV-j0tKbacya71aIihaGmDXYmzEee4I8/exec';
 
 function submitForm(){
   const empresa  = document.getElementById('empresa').value;
@@ -1144,7 +1129,6 @@ function submitForm(){
     tecnicoNombre: document.getElementById('tecnicoNombre').value,
     tecnicoCargo:  document.getElementById('tecnicoCargo').value,
     empresa_tqi:   'TQI',
-    fotos:         uploadedPhotos.map((p,i)=>({indice:i+1, caption:p.caption, dataUrl:p.dataUrl})),
   };
 
   fetch(SCRIPT_URL, {
@@ -1156,51 +1140,49 @@ function submitForm(){
 }
 
 
-// ─── PHOTOS ──────────────────────────────────────────────────────────────────
-let uploadedPhotos = []; // {dataUrl, caption, name}
-
-function handlePhotos(input) {
-  const files = Array.from(input.files);
-  if(uploadedPhotos.length + files.length > 10){
-    alert('Máximo 10 fotos por visita'); return;
-  }
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      uploadedPhotos.push({ dataUrl: e.target.result, caption: '', name: file.name });
-      renderPhotoPreview();
-    };
-    reader.readAsDataURL(file);
-  });
-  input.value = '';
-}
-
-function renderPhotoPreview(){
-  const grid = document.getElementById('photoPreview');
-  grid.innerHTML = '';
-  uploadedPhotos.forEach((p, i) => {
-    const div = document.createElement('div');
-    div.className = 'photo-thumb';
-    div.innerHTML = `
-      <img src="${p.dataUrl}" alt="Foto ${i+1}">
-      <div class="photo-thumb-label">Imagen ${i+1}</div>
-      <button class="photo-remove" onclick="removePhoto(${i})">✕</button>
-      <input class="photo-caption-input" type="text" placeholder="Descripción…"
-             value="${p.caption}" oninput="uploadedPhotos[${i}].caption=this.value">`;
-    grid.appendChild(div);
-  });
-  const area = document.getElementById('photoArea');
-  area.querySelector('.photo-upload-text').textContent =
-    uploadedPhotos.length > 0 ? `${uploadedPhotos.length} foto(s) cargada(s) — toca para agregar más` : 'Toca aquí para tomar fotos o seleccionar desde galería';
-}
-
-function removePhoto(i){
-  uploadedPhotos.splice(i, 1);
-  renderPhotoPreview();
-}
-
 // ─── INIT ────────────────────────────────────────────────────────────────────
-document.getElementById('fecha').valueAsDate = new Date();
+function initApp(){
+  document.getElementById('fecha').valueAsDate = new Date();
+
+  // Stepbar
+  for(var i=0;i<7;i++){
+    (function(n){
+      var el=document.getElementById('sb-'+n);
+      if(el) el.addEventListener('click',function(){ goTo(n); });
+    })(i);
+  }
+  // Botones navegacion
+  var nav=[
+    ['btn-next-0',function(){goTo(1);}],
+    ['btn-prev-1',function(){goTo(0);}],['btn-next-1',function(){goTo(2);}],
+    ['btn-prev-2',function(){goTo(1);}],['btn-next-2',function(){goTo(3);}],
+    ['btn-prev-3',function(){goTo(2);}],['btn-next-3',function(){goTo(4);}],
+    ['btn-prev-4',function(){goTo(3);}],['btn-next-4',function(){goTo(5);}],
+    ['btn-prev-5',function(){goTo(4);}],['btn-next-5',function(){goTo(6);buildSummary();}],
+    ['btn-prev-6',function(){goTo(5);}],
+    ['btn-submit',function(){submitForm();}],
+    ['memBtn',function(){loadMemory();}],
+  ];
+  nav.forEach(function(pair){
+    var el=document.getElementById(pair[0]);
+    if(el) el.addEventListener('click',pair[1]);
+  });
+  document.getElementById('empresa').addEventListener('input',function(e){checkMemory(e.target.value);});
+  document.getElementById('caudal').addEventListener('input',calcQ);
+  document.getElementById('horas').addEventListener('input',calcQ);
+  document.getElementById('dias').addEventListener('input',calcQ);
+  ['app_ptar','app_ptap','app_olor','app_torre'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('change',renderApps);
+  });
+}
+
+// Ejecutar cuando el DOM esté listo
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 </script>
 </body>
 </html>
